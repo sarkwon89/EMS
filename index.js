@@ -75,7 +75,10 @@ async function prompt() {
                     name: "addDepartment",
                     message: "Enter in the department you want to add?:",
                 }]);
+
                 //insert new department into the database
+                await SERVER.createDepartment(thirdResponse);
+                
             } else if (secondResponse.add === "Role") {
                 thirdResponse = await inquirer.prompt([{
                     type: "input",
@@ -88,6 +91,7 @@ async function prompt() {
                     message: "Enter in the salary for the role?:",
                 }]);
                 //insert new role into the database
+                await SERVER.createRole();
             } else if (secondResponse.add === "Employee") {
                 thirdResponse = await inquirer.prompt([{
                     type: "input",
@@ -107,12 +111,12 @@ async function prompt() {
 
             }
 
-            console.log(thirdResponse)
+            
 
-            //this statement will VIEW department, role or employee
+            // //this statement will VIEW department, role or employee
             if (secondResponse.view === "Department") {
                 //show department data
-                return //employee by department data
+                await SERVER.viewDepartment(thirdResponse)
             } else if (secondResponse.view === "Role") {
                 return //employee by role data
             } else if (secondResponse.view === "Employee") {
@@ -124,6 +128,5 @@ async function prompt() {
         }
     } while (firstResponse.action !== "Exit");
 };
-
 
 prompt()

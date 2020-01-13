@@ -16,14 +16,20 @@ var connection = mysql.createConnection({
 });
 
 
+// connection.connect(function (err) {
+//     if (err) throw err;
+//     console.log("connected as id " + connection.threadId);
+//   });
+
 //create department, employee or role 
 
 function createDepartment (thirdResponse){
     console.log("Inserting a new department...\n");
+    console.log(thirdResponse)
     var query = connection.query(
       "INSERT INTO department SET ?",
       {
-        departmentName: thirddResponse.addDepartment
+        departmentName: thirdResponse.addDepartment
       },
       function(err, res) {
         if (err) throw err;
@@ -31,7 +37,7 @@ function createDepartment (thirdResponse){
       }
     );
   
-    // logs the actual query being run
+    //logs the actual query being run
     console.log(query.sql);
 }
 
@@ -41,10 +47,8 @@ function createRole (thirdResponse){
     var query = connection.query(
       "INSERT INTO roles SET ?",
       {
-        role_title: thirdResponse.addRole
-      },
-      {
-        salary: thirdResponse.addSalary
+        role_title: thirdResponse.addRole,
+        salary: thirdResponse.addSalary,
       },
       function(err, res) {
         if (err) throw err;
@@ -65,7 +69,7 @@ function createEmployee (thirdResponse){
         first_name: thirdResponse.addFirst
       },
       {
-        last_name: secondResponse.addSecond
+        last_name: thirdResponse.addSecond
       },
       function(err, res) {
         if (err) throw err;
@@ -77,6 +81,36 @@ function createEmployee (thirdResponse){
     console.log(query.sql);
 }
 
+function viewDepartment(){
+    console.log("Selecting all department...\n");
+    connection.query("SELECT * FROM department", function(err, res) {
+      if (err) throw err;
+      // Log all results of the SELECT statement
+      console.table(res);
+      connection.end();
+    });
+};
+
+function viewRole(){
+    console.log("Selecting all roles...\n");
+    connection.query("SELECT * FROM roles", function(err, res) {
+      if (err) throw err;
+      // Log all results of the SELECT statement
+      console.log(res);
+      connection.end();
+    });
+};
+
+// Function viewE(){
+//     console.log("Selecting all employee...\n");
+//     connection.query("SELECT * FROM employee", function(err, res) {
+//       if (err) throw err;
+//       // Log all results of the SELECT statement
+//       console.log(res);
+//       connection.end();
+//     })
+// };
+
 
 
 
@@ -84,3 +118,5 @@ function createEmployee (thirdResponse){
 exports.createDepartment = createDepartment;
 exports.createRole = createRole;
 exports.createEmployee = createEmployee;
+exports.viewDepartment = viewDepartment;
+exports.viewRole = viewRole;
