@@ -104,14 +104,10 @@ async function prompt() {
                     name: "addSecond",
                     message: "Enter the second name of the employee.:",
                 },
-                {
-                    type: "input",
-                    name: "addRole",
-                    message: "Enter the first name of the employee.:",
-                }])
-
+                ])
+                //insert new employee into database
+                await SERVER.createEmployee(thirdResponse);
             }
-
 
             // //this statement will VIEW department, role or employee
             if (secondResponse.view === "Department") {

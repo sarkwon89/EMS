@@ -64,10 +64,10 @@ function createRole (thirdResponse){
 function createEmployee (thirdResponse){
     console.log("Inserting a new role...\n");
     var query = connection.query(
-      "INSERT INTO roles SET ?",
+      "INSERT INTO employee SET ?",
       {
         first_name: thirdResponse.addFirst,
-        last_name: thirdResponse.addSecond
+        last_name: thirdResponse.addSecond,
       },
       function(err, res) {
         if (err) throw err;
