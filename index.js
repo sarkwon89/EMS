@@ -80,6 +80,7 @@ async function prompt() {
                 await SERVER.createDepartment(thirdResponse);
                 
             } else if (secondResponse.add === "Role") {
+                // await SERVER.viewDepartment();
                 thirdResponse = await inquirer.prompt([{
                     type: "input",
                     name: "addRole",
@@ -91,7 +92,7 @@ async function prompt() {
                     message: "Enter in the salary for the role?:",
                 }]);
                 //insert new role into the database
-                await SERVER.createRole();
+                await SERVER.createRole(thirdResponse);
             } else if (secondResponse.add === "Employee") {
                 thirdResponse = await inquirer.prompt([{
                     type: "input",
@@ -111,16 +112,15 @@ async function prompt() {
 
             }
 
-            
 
             // //this statement will VIEW department, role or employee
             if (secondResponse.view === "Department") {
                 //show department data
                 await SERVER.viewDepartment(thirdResponse)
             } else if (secondResponse.view === "Role") {
-                return //employee by role data
+                await SERVER.viewRole(thirdResponse);
             } else if (secondResponse.view === "Employee") {
-                return //employee data
+                await SERVER.viewEmployee(thirdResponse);
             }
 
         } catch (err) {

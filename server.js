@@ -66,9 +66,7 @@ function createEmployee (thirdResponse){
     var query = connection.query(
       "INSERT INTO roles SET ?",
       {
-        first_name: thirdResponse.addFirst
-      },
-      {
+        first_name: thirdResponse.addFirst,
         last_name: thirdResponse.addSecond
       },
       function(err, res) {
@@ -87,7 +85,7 @@ function viewDepartment(){
       if (err) throw err;
       // Log all results of the SELECT statement
       console.table(res);
-      connection.end();
+    //   connection.end();
     });
 };
 
@@ -96,22 +94,20 @@ function viewRole(){
     connection.query("SELECT * FROM roles", function(err, res) {
       if (err) throw err;
       // Log all results of the SELECT statement
-      console.log(res);
-      connection.end();
+      console.table(res);
+    //   connection.end();
     });
 };
 
-// Function viewE(){
-//     console.log("Selecting all employee...\n");
-//     connection.query("SELECT * FROM employee", function(err, res) {
-//       if (err) throw err;
-//       // Log all results of the SELECT statement
-//       console.log(res);
-//       connection.end();
-//     })
-// };
-
-
+function viewEmployee(){
+    console.log("Selecting all employee...\n");
+    connection.query("SELECT * FROM employee", function(err, res) {
+      if (err) throw err;
+      // Log all results of the SELECT statement
+      console.table(res);
+    //   connection.end();
+    });
+};
 
 
 //exporing the createitem function
@@ -120,3 +116,4 @@ exports.createRole = createRole;
 exports.createEmployee = createEmployee;
 exports.viewDepartment = viewDepartment;
 exports.viewRole = viewRole;
+exports.viewEmployee = viewEmployee;
