@@ -74,19 +74,37 @@ async function prompt() {
                     type: "input",
                     name: "addDepartment",
                     message: "Enter in the department you want to add?:",
-                }])
+                }]);
+                //insert new department into the database
             } else if (secondResponse.add === "Role") {
                 thirdResponse = await inquirer.prompt([{
                     type: "input",
                     name: "addRole",
                     message: "Enter in the role you want to add?:",
-                }])
+                },
+                {
+                    type: "input",
+                    name: "addSalary",
+                    message: "Enter in the salary for the role?:",
+                }]);
+                //insert new role into the database
             } else if (secondResponse.add === "Employee") {
                 thirdResponse = await inquirer.prompt([{
                     type: "input",
-                    name: "addEmployeee",
-                    message: "Enter in the employee you want to add?:",
+                    name: "addFirst",
+                    message: "Enter the first name of the employee.:",
+                },
+                {
+                    type: "input",
+                    name: "addSecond",
+                    message: "Enter the second name of the employee.:",
+                },
+                {
+                    type: "input",
+                    name: "addRole",
+                    message: "Enter the first name of the employee.:",
                 }])
+
             }
 
             console.log(thirdResponse)
