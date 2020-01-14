@@ -7,20 +7,17 @@ async function prompt() {
     //first prompt Add departments, roles, employees
     do {
         try {
-            firstResponse = await inquirer.prompt([
-
-                {
-                    type: "list",
-                    name: "action",
-                    message: "What would you like to do?: ",
-                    choices: [
-                        "Add department, role or employee.",
-                        "View deparment, role or employee.",
-                        "Update the employee's role.",
-                        "Exit"
-                    ]
-                },
-            ]);
+            firstResponse = await inquirer.prompt([{
+                type: "list",
+                name: "action",
+                message: "What would you like to do?: ",
+                choices: [
+                    "Add department, role or employee.",
+                    "View deparment, role or employee.",
+                    "Update the employee's role.",
+                    "Exit"
+                ]
+            }, ]);
 
             let secondResponse = ""
 
@@ -78,32 +75,49 @@ async function prompt() {
 
                 //insert new department into the database
                 await SERVER.createDepartment(thirdResponse);
-                
+
             } else if (secondResponse.add === "Role") {
-                // await SERVER.viewDepartment();
+
+                let departmentres = await SERVER.displayDepartment()
+                console.log("test" + departmentres[0].departmentName)
+
                 thirdResponse = await inquirer.prompt([{
-                    type: "input",
-                    name: "addRole",
-                    message: "Enter in the role you want to add?:",
-                },
-                {
-                    type: "input",
-                    name: "addSalary",
-                    message: "Enter in the salary for the role?:",
-                }]);
+                        type: "input",
+                        name: "addRole",
+                        message: "Enter in the role you want to add?:",
+                    },
+                    {
+                        type: "input",
+                        name: "addSalary",
+                        message: "Enter in the salary for the role?:",
+                    },
+                    {
+                        type: "list",
+                        name: "departmentList",
+                        message: "Which department does this role belong in? Create a new department if you do not see one that matches the new role?",
+                        choices: [
+                            departmentres[0].departmentName,
+                            "Exit"
+                        ]
+                    }
+                ])
                 //insert new role into the database
                 await SERVER.createRole(thirdResponse);
+
             } else if (secondResponse.add === "Employee") {
                 thirdResponse = await inquirer.prompt([{
-                    type: "input",
-                    name: "addFirst",
-                    message: "Enter the first name of the employee.:",
-                },
-                {
-                    type: "input",
-                    name: "addSecond",
-                    message: "Enter the second name of the employee.:",
-                },
+                        type: "input",
+                        name: "addFirst",
+                        message: "Enter the first name of the employee.:",
+                    },
+                    {
+                        type: "input",
+                        name: "addSecond",
+                        message: "Enter the second name of the employee.:",
+                    },
+                    {
+
+                    }
                 ])
                 //insert new employee into database
                 await SERVER.createEmployee(thirdResponse);
@@ -122,7 +136,8 @@ async function prompt() {
         } catch (err) {
             return console.log(err);
         }
-    } while (firstResponse.action !== "Exit");
+    }
+    while (firstResponse.action !== "Exit");
 };
 
 prompt()

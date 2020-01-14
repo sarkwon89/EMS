@@ -1,19 +1,22 @@
 var mysql = require("mysql");
+var util = require("util");
 
 
 var connection = mysql.createConnection({
-    host: "localhost",
+  host: "localhost",
 
-    // Your port; if not 3306
-    port: 3306,
+  // Your port; if not 3306
+  port: 3306,
 
-    // Your username
-    user: "root",
+  // Your username
+  user: "root",
 
-    // Your password
-    password: "password",
-    database: "ems_db"
+  // Your password
+  password: "password",
+  database: "ems_db"
 });
+
+const query = util.promisify(connection.query).bind(connection);
 
 
 // connection.connect(function (err) {
@@ -23,90 +26,106 @@ var connection = mysql.createConnection({
 
 //create department, employee or role 
 
-function createDepartment (thirdResponse){
-    console.log("Inserting a new department...\n");
-    console.log(thirdResponse)
-    var query = connection.query(
-      "INSERT INTO department SET ?",
-      {
-        departmentName: thirdResponse.addDepartment
-      },
-      function(err, res) {
-        if (err) throw err;
-        console.log(res.affectedRows + " items inserted!\n");
-      }
-    );
-  
-    //logs the actual query being run
-    console.log(query.sql);
+function createDepartment(thirdResponse) {
+  console.log("Inserting a new department...\n");
+  console.log(thirdResponse)
+  var query = connection.query(
+    "INSERT INTO department SET ?", {
+      departmentName: thirdResponse.addDepartment
+    },
+    function (err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " items inserted!\n");
+    }
+  );
+
+  //logs the actual query being run
+  console.log(query.sql);
 }
 
 //function to create role
-function createRole (thirdResponse){
-    console.log("Inserting a new role...\n");
-    var query = connection.query(
-      "INSERT INTO roles SET ?",
-      {
-        role_title: thirdResponse.addRole,
-        salary: thirdResponse.addSalary,
-      },
-      function(err, res) {
-        if (err) throw err;
-        console.log(res.affectedRows + " items inserted!\n");
-      }
-    );
-  
-    // logs the actual query being run
-    console.log(query.sql);
+function createRole(thirdResponse) {
+  console.log("Inserting a new role...\n");
+  var query = connection.query(
+    "INSERT INTO roles SET ?", {
+      role_title: thirdResponse.addRole,
+      salary: thirdResponse.addSalary,
+      department_id: thirdResponse.departmentList
+    },
+    function (err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " items inserted!\n");
+    }
+  );
+  // logs the actual query being run
+  console.log(query.sql);
 }
+
+//return an array of department id
+async function displayDepartment() {
+  let departmentres;
+  console.log("Show department list")
+  try{
+    const rows = await query ("SELECT departmentName FROM department");
+    departmentres = rows;
+  }
+  catch(err) {
+    return console.log(err);
+  }
+  // console.log(departmentres)
+  return departmentres;
+}
+
+displayDepartment()
+
+// logs the actual query being run
+
 
 //function to create employee
-function createEmployee (thirdResponse){
-    console.log("Inserting a new role...\n");
-    var query = connection.query(
-      "INSERT INTO employee SET ?",
-      {
-        first_name: thirdResponse.addFirst,
-        last_name: thirdResponse.addSecond,
-      },
-      function(err, res) {
-        if (err) throw err;
-        console.log(res.affectedRows + " items inserted!\n");
-      }
-    );
-  
-    // logs the actual query being run
-    console.log(query.sql);
+function createEmployee(thirdResponse) {
+  console.log("Inserting a new role...\n");
+  var query = connection.query(
+    "INSERT INTO employee SET ?", {
+      first_name: thirdResponse.addFirst,
+      last_name: thirdResponse.addSecond,
+    },
+    function (err, res) {
+      if (err) throw err;
+      console.log(res.affectedRows + " items inserted!\n");
+    }
+  );
+  // logs the actual query being run
+  console.log(query.sql);
 }
 
-function viewDepartment(){
-    console.log("Selecting all department...\n");
-    connection.query("SELECT * FROM department", function(err, res) {
-      if (err) throw err;
-      // Log all results of the SELECT statement
-      console.table(res);
+function viewDepartment() {
+  console.log("Selecting all department...\n");
+  connection.query("SELECT * FROM department", function (err, res) {
+    if (err) throw err;
+    // Log all results of the SELECT statement
+    console.table(res);
     //   connection.end();
-    });
+  });
 };
 
-function viewRole(){
-    console.log("Selecting all roles...\n");
-    connection.query("SELECT * FROM roles", function(err, res) {
-      if (err) throw err;
-      // Log all results of the SELECT statement
-      console.table(res);
+function viewRole() {
+  console.log("Selecting all roles...\n");
+  connection.query("SELECT * FROM roles", function (err, res) {
+    if (err) throw err;
+    // Log all results of the SELECT statement
+    console.table(res);
     //   connection.end();
-    });
+  });
 };
 
-function viewEmployee(){
-    console.log("Selecting all employee...\n");
-    connection.query("SELECT * FROM employee", function(err, res) {
-      if (err) throw err;
-      // Log all results of the SELECT statement
-      console.table(res);
+function viewEmployee() {
+  console.log("Selecting all employee...\n");
+  connection.query("SELECT * FROM employee", function (err, res) {
+    if (err) throw err;
+    // Log all results of the SELECT statement
+    console.table(res);
     //   connection.end();
-    });
+  });
 };
 
 
@@ -117,3 +136,4 @@ exports.createEmployee = createEmployee;
 exports.viewDepartment = viewDepartment;
 exports.viewRole = viewRole;
 exports.viewEmployee = viewEmployee;
+exports.displayDepartment = displayDepartment;

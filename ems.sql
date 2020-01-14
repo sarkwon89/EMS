@@ -30,3 +30,5 @@ CREATE TABLE employee(
     FOREIGN KEY (manager_id) REFERENCES employee(e_id)
 );
 
+
+SELECT departmentName FROM department
