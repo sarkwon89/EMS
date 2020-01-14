@@ -60,11 +60,10 @@ async function prompt() {
                 ]);
 
                 //run the function that will update the employee's id with sql
-
             }
 
-
             let thirdResponse = ""
+
             //this statement will ADD department, role or employee
             if (secondResponse.add === "Department") {
                 thirdResponse = await inquirer.prompt([{
@@ -79,7 +78,14 @@ async function prompt() {
             } else if (secondResponse.add === "Role") {
 
                 let departmentres = await SERVER.displayDepartment()
-                console.log("test" + departmentres[0].departmentName)
+
+                let departList = []
+
+                for (let index = 0; index < departmentres.length; index++) {
+                    departList.push(departmentres[index].departmentName)
+                };
+
+                departList.push("Exit")
 
                 thirdResponse = await inquirer.prompt([{
                         type: "input",
@@ -95,12 +101,9 @@ async function prompt() {
                         type: "list",
                         name: "departmentList",
                         message: "Which department does this role belong in? Create a new department if you do not see one that matches the new role?",
-                        choices: [
-                            departmentres[0].departmentName,
-                            "Exit"
-                        ]
+                        choices: departList
                     }
-                ])
+                ]);
                 //insert new role into the database
                 await SERVER.createRole(thirdResponse);
 
@@ -115,13 +118,12 @@ async function prompt() {
                         name: "addSecond",
                         message: "Enter the second name of the employee.:",
                     },
-                    {
-
-                    }
                 ])
                 //insert new employee into database
                 await SERVER.createEmployee(thirdResponse);
             }
+
+            console.log("test")
 
             // //this statement will VIEW department, role or employee
             if (secondResponse.view === "Department") {
@@ -132,7 +134,6 @@ async function prompt() {
             } else if (secondResponse.view === "Employee") {
                 await SERVER.viewEmployee(thirdResponse);
             }
-
         } catch (err) {
             return console.log(err);
         }
@@ -140,4 +141,4 @@ async function prompt() {
     while (firstResponse.action !== "Exit");
 };
 
-prompt()
+prompt();

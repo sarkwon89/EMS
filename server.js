@@ -18,18 +18,12 @@ var connection = mysql.createConnection({
 
 const query = util.promisify(connection.query).bind(connection);
 
-
-// connection.connect(function (err) {
-//     if (err) throw err;
-//     console.log("connected as id " + connection.threadId);
-//   });
-
 //create department, employee or role 
 
-function createDepartment(thirdResponse) {
+async function createDepartment(thirdResponse) {
   console.log("Inserting a new department...\n");
   console.log(thirdResponse)
-  var query = connection.query(
+  connection.query(
     "INSERT INTO department SET ?", {
       departmentName: thirdResponse.addDepartment
     },
@@ -39,52 +33,45 @@ function createDepartment(thirdResponse) {
     }
   );
 
-  //logs the actual query being run
-  console.log(query.sql);
 }
 
 //function to create role
-function createRole(thirdResponse) {
+async function createRole(thirdResponse) {
   console.log("Inserting a new role...\n");
-  var query = connection.query(
+  connection.query(
     "INSERT INTO roles SET ?", {
       role_title: thirdResponse.addRole,
       salary: thirdResponse.addSalary,
-      department_id: thirdResponse.departmentList
+      department_name: thirdResponse.departmentList
     },
     function (err, res) {
       if (err) throw err;
       console.log(res.affectedRows + " items inserted!\n");
     }
-  );
-  // logs the actual query being run
-  console.log(query.sql);
+  )
 }
 
 //return an array of department id
 async function displayDepartment() {
   let departmentres;
   console.log("Show department list")
-  try{
-    const rows = await query ("SELECT departmentName FROM department");
+  try {
+    const rows = await query("SELECT departmentName FROM department");
     departmentres = rows;
-  }
-  catch(err) {
+  } catch (err) {
     return console.log(err);
   }
-  // console.log(departmentres)
+  console.log(departmentres)
   return departmentres;
 }
-
-displayDepartment()
 
 // logs the actual query being run
 
 
 //function to create employee
-function createEmployee(thirdResponse) {
+async function createEmployee(thirdResponse) {
   console.log("Inserting a new role...\n");
-  var query = connection.query(
+  connection.query(
     "INSERT INTO employee SET ?", {
       first_name: thirdResponse.addFirst,
       last_name: thirdResponse.addSecond,
@@ -94,11 +81,9 @@ function createEmployee(thirdResponse) {
       console.log(res.affectedRows + " items inserted!\n");
     }
   );
-  // logs the actual query being run
-  console.log(query.sql);
 }
 
-function viewDepartment() {
+async function viewDepartment() {
   console.log("Selecting all department...\n");
   connection.query("SELECT * FROM department", function (err, res) {
     if (err) throw err;
@@ -108,7 +93,7 @@ function viewDepartment() {
   });
 };
 
-function viewRole() {
+async function viewRole() {
   console.log("Selecting all roles...\n");
   connection.query("SELECT * FROM roles", function (err, res) {
     if (err) throw err;
@@ -118,7 +103,7 @@ function viewRole() {
   });
 };
 
-function viewEmployee() {
+async function viewEmployee() {
   console.log("Selecting all employee...\n");
   connection.query("SELECT * FROM employee", function (err, res) {
     if (err) throw err;
