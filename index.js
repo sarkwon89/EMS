@@ -1,144 +1,464 @@
-var inquirer = require("inquirer");
-const SERVER = require("../EMS/server")
+const inquirer = require("inquirer");
+// const SERVER = require("../EMS/server");
+const mysql = require("mysql");
 
-async function prompt() {
-    let firstResponse;
 
-    //first prompt Add departments, roles, employees
-    do {
-        try {
-            firstResponse = await inquirer.prompt([{
-                type: "list",
+// //port for mysql
+var connection = mysql.createConnection({
+    host: "localhost",
+
+    // Your port; if not 3306
+    port: 3306,
+
+    // Your username
+    user: "root",
+
+    // Your password
+    password: "password",
+    database: "ems_db"
+});
+
+
+// connect to the mysql server and sql database
+connection.connect(function (err) {
+    if (err) throw err;
+    // run the start function after the connection is made to prompt the user
+    startPrompt()
+});
+
+
+//first prompt that will ask user what he or she wants to do
+function startPrompt() {
+
+    inquirer.prompt([{
                 name: "action",
-                message: "What would you like to do?: ",
-                choices: [
-                    "Add department, role or employee.",
-                    "View deparment, role or employee.",
-                    "Update the employee's role.",
-                    "Exit"
-                ]
-            }, ]);
-
-            let secondResponse = ""
-
-            if (firstResponse.action === "Add department, role or employee.") {
-                secondResponse = await inquirer.prompt([{
-                    type: "list",
-                    name: "add",
-                    message: "Do you want to add a department, role or employee?:",
-                    choices: [
-                        "Department",
-                        "Role",
-                        "Employee"
-                    ]
-                }, ]);
-            } else if (firstResponse.action === "View deparment, role or employee.") {
-                secondResponse = await inquirer.prompt([{
-                    type: "list",
-                    name: "view",
-                    message: "Do you want to view a department, role or employee?:",
-                    choices: [
-                        "Department",
-                        "Role",
-                        "Employee"
-                    ]
-                }, ]);
-            } else if (firstResponse.action === "Update the employee's role.") {
-                //show the employee data
-
-                //then run the prompt
-                secondResponse = await inquirer.prompt([{
-                        type: "input",
-                        name: "roleId",
-                        message: "Enter the employee's role id:",
-                    },
-                    {
-                        type: "input",
-                        name: "newRoleId",
-                        message: "Enter a new employee's role id?:",
-                    },
-                ]);
-
-                //run the function that will update the employee's id with sql
+                type: "list",
+                message: "What would you like to do?",
+                choices: ["Add", "View", "Update", "Delete"]
+            },
+            {
+                name: "option",
+                type: "list",
+                message: "Select from the options below?",
+                choices: ["Employee", "Role", "Department"]
             }
+        ]) // switch statement for the next prompt
+        .then(function (res) {
+            console.log(`You chose to ${res.action} a ${res.option}`);
 
-            let thirdResponse = ""
+            switch (res.action) {
+                case "Add":
+                    createData(res.option);
+                    break;
+                case "View":
+                    readData(res.option);
+                    break;
+                case "Update":
+                    updateData(res.option);
+                    break;
+                case "Delete":
+                    deleteData(res.option);
+                    break;
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
+}
 
-            //this statement will ADD department, role or employee
-            if (secondResponse.add === "Department") {
-                thirdResponse = await inquirer.prompt([{
-                    type: "input",
-                    name: "addDepartment",
-                    message: "Enter in the department you want to add?:",
-                }]);
+//CREATE DATA FUNCTION
+function createData(option) {
 
-                //insert new department into the database
-                await SERVER.createDepartment(thirdResponse);
+    switch (option) {
+        //create employee statement
+        case 'Employee':
 
-            } else if (secondResponse.add === "Role") {
-
-                let departmentres = await SERVER.displayDepartment()
-
-                let departList = []
-
-                for (let index = 0; index < departmentres.length; index++) {
-                    departList.push(departmentres[index].departmentName)
-                };
-
-                departList.push("Exit")
-
-                thirdResponse = await inquirer.prompt([{
-                        type: "input",
-                        name: "addRole",
-                        message: "Enter in the role you want to add?:",
-                    },
-                    {
-                        type: "input",
-                        name: "addSalary",
-                        message: "Enter in the salary for the role?:",
-                    },
-                    {
-                        type: "list",
-                        name: "departmentList",
-                        message: "Which department does this role belong in? Create a new department if you do not see one that matches the new role?",
-                        choices: departList
+            // get roles data for list
+            connection.query("SELECT * FROM roles", function (err, res) {
+                if (err) throw err;
+                const roles = res.map(object => {
+                    return {
+                        name: object.role_title,
+                        value: object.r_id
                     }
-                ]);
-                //insert new role into the database
-                await SERVER.createRole(thirdResponse);
+                });
+                roles.push("N/A")
 
-            } else if (secondResponse.add === "Employee") {
-                thirdResponse = await inquirer.prompt([{
-                        type: "input",
-                        name: "addFirst",
-                        message: "Enter the first name of the employee.:",
-                    },
-                    {
-                        type: "input",
-                        name: "addSecond",
-                        message: "Enter the second name of the employee.:",
-                    },
-                ])
-                //insert new employee into database
-                await SERVER.createEmployee(thirdResponse);
-            }
+                // get employee data for list
+                connection.query("SELECT * FROM employee", function (err, res) {
+                    if (err) throw err;
 
-            console.log("test")
+                    const employees = res.map(object => {
+                        return {
+                            name: `${object.first_name} ${object.last_name}`,
+                            value: object.e_id
+                        }
+                    });
+                    employees.unshift({
+                        name: "no manager",
+                        value: null
+                    })
 
-            // //this statement will VIEW department, role or employee
-            if (secondResponse.view === "Department") {
-                //show department data
-                await SERVER.viewDepartment(thirdResponse)
-            } else if (secondResponse.view === "Role") {
-                await SERVER.viewRole(thirdResponse);
-            } else if (secondResponse.view === "Employee") {
-                await SERVER.viewEmployee(thirdResponse);
-            }
-        } catch (err) {
-            return console.log(err);
-        }
+                    // prompt for user input
+                    inquirer.prompt([{
+                                name: "first_name",
+                                type: "input",
+                                message: "What is the employee's first name?",
+                            },
+                            {
+                                name: "last_name",
+                                type: "input",
+                                message: "What is the employee's last name?",
+                            },
+                            {
+                                name: "role",
+                                type: "list",
+                                message: "What is the employee's position?",
+                                choices: roles
+                            },
+                            {
+                                name: "manager",
+                                type: "list",
+                                message: "Who is the employee's manager?",
+                                choices: employees
+                            },
+                        ])
+                        .then(function (res) {
+                            // console.log(res);
+                            //statement to handle if role is not available
+                            if (res.role === "N/A") {
+                                genRolePrompt();
+                            } else {
+                                console.log(`Inserting ${res.first_name} ${res.last_name} as a new employee...\n`);
+                                console.log(res.manager)
+                                connection.query(
+                                    "INSERT INTO employee SET ?", {
+                                        first_name: res.first_name,
+                                        last_name: res.last_name,
+                                        role_id: res.role,
+                                        manager_id: res.manager,
+                                    },
+                                    function (err, res) {
+                                        if (err) throw err;
+                                        console.log(res.affectedRows + " employee inserted!\n");
+                                        // run the continue prompt once data has been updated for employee table
+                                        continuePrompt()
+                                    }
+                                );
+                            }
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                        })
+                });
+            });
+            break;
+
+            //create role statement
+        case 'Role':
+            connection.query("SELECT * FROM department", function (err, res) {
+                if (err) throw err;
+
+                // get roles data for list
+                const departments = res.map(object => {
+                    return {
+                        name: object.departmentName,
+                        value: object.d_id
+                    }
+                });
+
+                departments.push("N/A")
+
+                // prompt to fill out new role info
+                inquirer.prompt([{
+                            name: "title",
+                            type: "input",
+                            message: "What is the title of the new role?",
+                        },
+                        {
+                            name: "salary",
+                            type: "number",
+                            message: "What is the salary of the new role?",
+                        },
+                        {
+                            name: "department",
+                            type: "list",
+                            message: "What is the employee's department?",
+                            choices: departments
+                        }
+                    ])
+                    .then(function (res) {
+                        //statement to handle if a department doesn't exist
+                        if (res.department === "N/A") {
+                            genDepartmentPrompt();
+                        } else {
+                            console.log("Inserting a new role...\n");
+                            connection.query(
+                                "INSERT INTO roles SET ?", {
+                                    role_title: res.title,
+                                    salary: res.salary,
+                                    department_id: res.department,
+                                },
+                                function (err, res) {
+                                    if (err) throw err;
+                                    console.log(res.affectedRows + " Role inserted!\n");
+                                    // run the continue prompt once data has been updated for role table
+                                    continuePrompt()
+                                }
+                            );
+                        }
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                    })
+            });
+            break;
+
+            //create department statement
+        case 'Department':
+            inquirer.prompt([{
+                    name: "departmentname",
+                    type: "input",
+                    message: "What is the name of the new Department?",
+                }, ]) // insert department info
+                .then(function (res) {
+                    console.log("Inserting a new Department...\n");
+                    connection.query(
+                        "INSERT INTO department SET ?", {
+                            departmentName: res.departmentname,
+                        },
+                        function (err, res) {
+                            if (err) throw err;
+                            console.log(res.affectedRows + " Department inserted!\n");
+                            // run the continue prompt once data has been updated for department table
+                            continuePrompt()
+                        }
+                    );
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+            break;
     }
-    while (firstResponse.action !== "Exit");
 };
 
-prompt();
+//read data function
+function readData(res) {
+    switch (res) {
+        case "Employee":
+            console.log("Selecting all employees...\n");
+            connection.query("SELECT * FROM employee", function (err, res) {
+                if (err) throw err;
+                // Log all results of the SELECT statement
+                console.table(res);
+                continuePrompt()
+            });
+            break;
+        case "Role":
+            console.log("Selecting all roles...\n");
+            connection.query("SELECT * FROM roles", function (err, res) {
+                if (err) throw err;
+                // Log all results of the SELECT statement
+                console.table(res);
+                continuePrompt()
+            });
+            break;
+        case "Department":
+            console.log("Selecting all departments...\n");
+            connection.query("SELECT * FROM department", function (err, res) {
+                if (err) throw err;
+                // Log all results of the SELECT statement
+                console.table(res);
+                continuePrompt()
+            });
+            break;
+    }
+}
+
+//UPDATE FUNCTION
+
+function updateData(option) {
+    switch (option) {
+        //update employee
+        case 'Employee':
+            // get employee data for list
+            connection.query("SELECT * FROM employee", function (err, res) {
+                if (err) throw err;
+                const employees = res.map(object => {
+                    return {
+                        name: `${object.first_name} ${object.last_name}`,
+                        value: object.e_id
+                    }
+                });
+
+
+                // get roles data for list
+                connection.query("SELECT * FROM roles", function (err, res) {
+                    if (err) throw err;
+                    const roles = res.map(object => {
+                        return {
+                            name: object.role_title,
+                            value: object.r_id
+                        }
+                    });
+
+                    console.log("Updating employee position...\n");
+                    inquirer.prompt([{
+                                name: "employee",
+                                type: "list",
+                                message: "Which employee would you like to modify roles?",
+                                choices: employees
+                            },
+                            {
+                                name: "role",
+                                type: "list",
+                                message: "What would you like to change their role to?",
+                                choices: roles
+                            }
+                        ])
+                        .then(function (res) {
+                            console.log(res.employee)
+                            console.log(res.role)
+                            console.log("Updating existing employee...\n");
+                            connection.query(
+                                "UPDATE employee SET ? WHERE ?",
+                                [
+                                    {
+                                        role_id: res.role
+                                    },
+                                    {
+                                        e_id: res.employee
+                                    }
+                                ],
+                                function (err, res) {
+                                    if (err) throw err;
+                                    console.log(res.affectedRows + " employee updated!\n");
+                                    // Call deleteemployee AFTER the UPDATE completes
+                                    continuePrompt()
+                                }
+                            );
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                        })
+                });
+            });
+            break;
+
+        case 'Role':
+            console.log("Updating Role salary...\n");
+            inquirer.prompt([{
+                        name: "title",
+                        type: "input",
+                        message: "Which role would you like to modify the salary?",
+                    },
+                    {
+                        name: "salary",
+                        type: "number",
+                        message: "What would you like to change the salary to?",
+                    }
+                ]) // add a .then/.catch
+                .then(function (res) {
+                    console.log("Updating salary information...\n");
+                    connection.query(
+                        "UPDATE employee SET ? WHERE ?",
+                        [{
+                                salary: res.salary
+                            },
+                            {
+                                title: res.title
+                            }
+                        ],
+                        function (err, res) {
+                            if (err) throw err;
+                            console.log(res.affectedRows + " role salary updated!\n");
+                            // Call deleteemployee AFTER the UPDATE completes
+                            continuePrompt()
+                        }
+                    );
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+            break;
+        case 'Department':
+            console.log("Nothing to update here! Sorry...\n");
+            continuePrompt()
+            break;
+    }
+};
+
+
+//CONTINUE TO EXIT FUNCTIONS (3 total)
+
+//continue or exit function
+function continuePrompt() {
+    inquirer.prompt({
+            name: "action",
+            type: "list",
+            message: "Would you like to continue to exit?",
+            choices: ["CONTINUE", "EXIT"]
+        })
+        .then(function (res) {
+            console.log(`${res.action}...\n`);
+            switch (res.action) {
+                case "EXIT":
+                    connection.end();
+                    break;
+                case "CONTINUE":
+                    startPrompt();
+                    break;
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
+}
+
+//continue or exit function if department is not available so user can create one
+function genDepartmentPrompt() {
+    inquirer.prompt({
+            name: "action",
+            type: "list",
+            message: "Please finish adding this role by creating the appropriate department.",
+            choices: ["CONTINUE", "EXIT"]
+        })
+        .then(function (res) {
+            console.log(`${res.action}...\n`);
+            switch (res.action) {
+                case "EXIT":
+                    connection.end();
+                    break;
+                case "CONTINUE":
+                    startPrompt();
+                    break;
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
+}
+
+//continue or exit function if role is not available so user can create one
+function genRolePrompt() {
+    inquirer.prompt({
+            name: "action",
+            type: "list",
+            message: "Please finish adding this employee by creating the appropriate role.",
+            choices: ["CONTINUE", "EXIT"]
+        })
+        .then(function (res) {
+            console.log(`${res.action}...\n`);
+            switch (res.action) {
+                case "EXIT":
+                    connection.end();
+                    break;
+                case "CONTINUE":
+                    startPrompt();
+                    break;
+            }
+        })
+        .catch(function (err) {
+            console.log(err);
+        })
+}
