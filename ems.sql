@@ -36,3 +36,6 @@ SELECT*FROM department;
 SELECT*FROM roles;
 
 SELECT*FROM employee;
+
+-- change salary query
+-- UPDATE roles SET salary = 200000 WHERE r_id = 1;

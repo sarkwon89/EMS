@@ -290,8 +290,6 @@ function updateData(option) {
                         value: object.e_id
                     }
                 });
-
-
                 // get roles data for list
                 connection.query("SELECT * FROM roles", function (err, res) {
                     if (err) throw err;
@@ -322,8 +320,7 @@ function updateData(option) {
                             console.log("Updating existing employee...\n");
                             connection.query(
                                 "UPDATE employee SET ? WHERE ?",
-                                [
-                                    {
+                                [{
                                         role_id: res.role
                                     },
                                     {
@@ -344,49 +341,22 @@ function updateData(option) {
                 });
             });
             break;
-
         case 'Role':
-            console.log("Updating Role salary...\n");
-            inquirer.prompt([{
-                        name: "title",
-                        type: "input",
-                        message: "Which role would you like to modify the salary?",
-                    },
-                    {
-                        name: "salary",
-                        type: "number",
-                        message: "What would you like to change the salary to?",
-                    }
-                ]) // add a .then/.catch
-                .then(function (res) {
-                    console.log("Updating salary information...\n");
-                    connection.query(
-                        "UPDATE employee SET ? WHERE ?",
-                        [{
-                                salary: res.salary
-                            },
-                            {
-                                title: res.title
-                            }
-                        ],
-                        function (err, res) {
-                            if (err) throw err;
-                            console.log(res.affectedRows + " role salary updated!\n");
-                            // Call deleteemployee AFTER the UPDATE completes
-                            continuePrompt()
-                        }
-                    );
-                })
-                .catch(function (err) {
-                    console.log(err);
-                })
+            console.log("Can't update role...\n");
+            continuePrompt()
             break;
         case 'Department':
-            console.log("Nothing to update here! Sorry...\n");
+            console.log("Can't update department...\n");
             continuePrompt()
             break;
     }
 };
+
+//DELETE FUNCTION
+
+
+
+
 
 
 //CONTINUE TO EXIT FUNCTIONS (3 total)
