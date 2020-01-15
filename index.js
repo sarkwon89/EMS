@@ -315,8 +315,8 @@ function updateData(option) {
                             }
                         ])
                         .then(function (res) {
-                            console.log(res.employee)
-                            console.log(res.role)
+                            // console.log(res.employee)
+                            // console.log(res.role)
                             console.log("Updating existing employee...\n");
                             connection.query(
                                 "UPDATE employee SET ? WHERE ?",
@@ -354,9 +354,54 @@ function updateData(option) {
 
 //DELETE FUNCTION
 
-
-
-
+function deleteData(option) {
+    switch (option) {
+        case 'Employee':
+            // get employee data for list
+            connection.query("SELECT * FROM employee", function (err, res) {
+                if (err) throw err;
+                const employees = res.map(object => {
+                    return {
+                        name: `${object.first_name} ${object.last_name}`,
+                        value: object.e_id
+                    }
+                });
+                inquirer.prompt([{
+                        name: "employee",
+                        type: "list",
+                        message: "Which employee would you like to remove?",
+                        choices: employees
+                    }, ])
+                    .then(function (res) {
+                        console.log("delecting an existing employee...\n");
+                        connection.query(
+                            "DELETE FROM employee WHERE ?",
+                            [{
+                                e_id: res.employee
+                            }],
+                            function (err, res) {
+                                if (err) throw err;
+                                console.log(res.affectedRows + " employee removed!\n");
+                                // run the continue function
+                                continuePrompt()
+                            }
+                        );
+                    })
+                    .catch(function (err) {
+                        console.log(err);
+                    })
+            })
+            break;
+        case 'Role':
+            console.log("Can't remove a role...unless you have special permissions\n");
+            continuePrompt()
+            break;
+        case 'Department':
+            console.log("Can't remove a department...unless you the boss\n");
+            continuePrompt()
+            break;
+    }
+}
 
 
 //CONTINUE TO EXIT FUNCTIONS (3 total)
